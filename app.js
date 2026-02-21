@@ -1,5 +1,4 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js";
-import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.150.1/examples/jsm/controls/OrbitControls.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const plansGrid = document.getElementById("plansGrid");
@@ -204,6 +203,145 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ---------- 3D Viewer (Three.js) ----------
+
+  // ---------- Minimal Orbit Controls (no external dependency) ----------
+  // Left-drag: rotate • Wheel: zoom • Right-drag / Shift+drag: pan
+  function createBasicOrbitControls(camera, domEl, opts = {}) {
+    const target = opts.target ? opts.target.clone() : new THREE.Vector3();
+    let radius = (opts.radius ?? 320);
+    const minRadius = opts.minRadius ?? 80;
+    const maxRadius = opts.maxRadius ?? 1500;
+    const damping = opts.damping ?? 0.12;
+
+    // Start angles from current camera position
+    const offset = new THREE.Vector3().subVectors(camera.position, target);
+    const spherical = new THREE.Spherical().setFromVector3(offset);
+
+    let isRotating = false;
+    let isPanning = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    let velTheta = 0;
+    let velPhi = 0;
+    let velPanX = 0;
+    let velPanY = 0;
+    let velRadius = 0;
+
+    domEl.style.touchAction = "none";
+
+    function clampPhi() {
+      const EPS = 0.0001;
+      spherical.phi = Math.max(EPS, Math.min(Math.PI - EPS, spherical.phi));
+    }
+
+    function pan(dx, dy) {
+      // Pan in camera space
+      const panSpeed = radius / 500; // scale with zoom
+      const v = new THREE.Vector3();
+      const right = new THREE.Vector3();
+      const up = new THREE.Vector3();
+
+      camera.getWorldDirection(v);
+      right.crossVectors(v, camera.up).normalize();
+      up.copy(camera.up).normalize();
+
+      target.addScaledVector(right, -dx * panSpeed);
+      target.addScaledVector(up, dy * panSpeed);
+    }
+
+    function onPointerDown(e) {
+      domEl.setPointerCapture?.(e.pointerId);
+      lastX = e.clientX;
+      lastY = e.clientY;
+      const panMode = (e.button === 2) || e.shiftKey;
+      isPanning = panMode;
+      isRotating = !panMode;
+    }
+
+    function onPointerMove(e) {
+      if (!isRotating && !isPanning) return;
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      lastX = e.clientX;
+      lastY = e.clientY;
+
+      if (isRotating) {
+        // radians per pixel
+        velTheta += -dx * 0.006;
+        velPhi += -dy * 0.006;
+      } else {
+        velPanX += dx * 0.004;
+        velPanY += dy * 0.004;
+      }
+    }
+
+    function onPointerUp(e) {
+      isRotating = false;
+      isPanning = false;
+      domEl.releasePointerCapture?.(e.pointerId);
+    }
+
+    function onWheel(e) {
+      e.preventDefault();
+      const delta = Math.sign(e.deltaY);
+      velRadius += delta * 18;
+    }
+
+    function onContextMenu(e) {
+      e.preventDefault();
+    }
+
+    domEl.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    domEl.addEventListener("wheel", onWheel, { passive: false });
+    domEl.addEventListener("contextmenu", onContextMenu);
+
+    function update() {
+      // apply damping
+      velTheta *= (1 - damping);
+      velPhi *= (1 - damping);
+      velPanX *= (1 - damping);
+      velPanY *= (1 - damping);
+      velRadius *= (1 - damping);
+
+      spherical.theta += velTheta;
+      spherical.phi += velPhi;
+      clampPhi();
+
+      radius = Math.min(maxRadius, Math.max(minRadius, radius + velRadius));
+      spherical.radius = radius;
+
+      if (Math.abs(velPanX) > 1e-5 || Math.abs(velPanY) > 1e-5) {
+        pan(velPanX, velPanY);
+      }
+
+      const newOffset = new THREE.Vector3().setFromSpherical(spherical);
+      camera.position.copy(target).add(newOffset);
+      camera.lookAt(target);
+    }
+
+    function dispose() {
+      domEl.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      domEl.removeEventListener("wheel", onWheel);
+      domEl.removeEventListener("contextmenu", onContextMenu);
+    }
+
+    function reset(camPos = new THREE.Vector3(220, 190, 220), newTarget = new THREE.Vector3(0, 20, 0)) {
+      target.copy(newTarget);
+      camera.position.copy(camPos);
+      const off = new THREE.Vector3().subVectors(camera.position, target);
+      spherical.setFromVector3(off);
+      radius = spherical.radius;
+      velTheta = velPhi = velPanX = velPanY = velRadius = 0;
+    }
+
+    return { target, update, dispose, reset, get radius() { return radius; }, set radius(v) { radius = v; } };
+  }
+
   function init3DViewer() {
     const container = document.getElementById("threeContainer");
     const viewSelect = document.getElementById("viewSelect");
@@ -213,9 +351,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!container) return;
 
-    // If the module fails to load for any reason, show a helpful message.
-    if (!THREE || !OrbitControls) {
-      if (hint) hint.textContent = "3D libraries failed to load. Check your internet/CDN access.";
+    // Three.js is loaded as an ES module. If it failed, show a helpful message.
+    if (!THREE) {
+      if (hint) hint.textContent = "3D library failed to load. Check your internet/CDN access.";
       return;
     }
 
@@ -232,10 +370,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 5000);
     camera.position.set(220, 190, 220);
 
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.06;
-    controls.target.set(0, 20, 0);
+    // Lightweight orbit controls (no external OrbitControls dependency).
+    const controls = createBasicOrbitControls(camera, renderer.domElement, {
+      target: new THREE.Vector3(0, 20, 0),
+      minRadius: 120,
+      maxRadius: 900,
+      damping: 0.10,
+    });
 
     // Lights
     const hemi = new THREE.HemisphereLight(0xffffff, 0x203050, 1.0);
