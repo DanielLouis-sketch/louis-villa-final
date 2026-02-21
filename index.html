@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Louis Villa</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div>
+    <div class="brandTitle">LOUIS VILLA</div>
+    <div class="brandSub">4 Floor Modern Residential Building — Architecture Plan + Gallery</div>
+  </div>
+
+  <div class="controls">
+    <label class="control">
+      <span>Plan Zoom</span>
+      <select id="scaleSelect">
+        <option value="0.8">80%</option>
+        <option value="1" selected>100%</option>
+        <option value="1.2">120%</option>
+        <option value="1.5">150%</option>
+      </select>
+    </label>
+    <button id="downloadAllBtn" class="btn">Download All Plans (SVG)</button>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- ARCHITECTURE PLAN SECTION -->
+  <section class="section">
+    <div class="sectionHeader">
+      <h2>Architecture Plans</h2>
+      <p>Floors 1–3 identical. Floor 4 identical with “LOUIS VILLA” on top. Each floor has a balcony. Roof shown separately.</p>
+    </div>
+
+    <div class="plansGrid" id="plansGrid">
+      <!-- Floor plan cards injected by app.js -->
+    </div>
+
+    <div class="roofWrap">
+      <div class="roofHeader">
+        <div>
+          <div class="roofTitle">Roof Plan</div>
+          <div class="roofMeta">Parapet outline + terrace + “LOUIS VILLA” signage strip</div>
+        </div>
+        <button class="btnSecondary" data-download="roof">Download Roof SVG</button>
+      </div>
+      <div class="planCanvas" id="roofCanvas"></div>
+    </div>
+  
+  <!-- INTERACTIVE 3D SECTION -->
+  <section class="section">
+    <div class="sectionHeader">
+      <h2>Interactive 3D Model</h2>
+      <p>Rotate, zoom, and inspect the building stack. Use “Explode” to separate floors.</p>
+    </div>
+
+    <div class="threeWrap">
+      <div class="threeControls">
+        <label class="control">
+          <span>View</span>
+          <select id="viewSelect">
+            <option value="all" selected>All Floors</option>
+            <option value="floor1">Floor 1</option>
+            <option value="floor2">Floor 2</option>
+            <option value="floor3">Floor 3</option>
+            <option value="floor4">Floor 4</option>
+            <option value="roof">Roof</option>
+          </select>
+        </label>
+
+        <label class="control" style="min-width:220px;">
+          <span>Explode</span>
+          <input id="explodeRange" type="range" min="0" max="140" value="40" />
+        </label>
+
+        <button id="resetCamBtn" class="btnSecondary">Reset Camera</button>
+      </div>
+
+      <div id="threeContainer" class="threeCanvas" aria-label="3D viewer"></div>
+      <div id="threeHint" class="threeHint">Tip: drag to rotate • scroll to zoom • right-drag to pan</div>
+    </div>
+  </section>
+
+</section>
+
+  <!-- GALLERY SECTION -->
+  <section class="section">
+    <div class="sectionHeader">
+      <h2>Louis Villa Gallery</h2>
+      <p>White • Pink • Light Brown Editions (16:9 slots)</p>
+    </div>
+
+    <div class="gallery">
+
+      <!-- WHITE ROW -->
+      <div class="renderCard">
+        <img src="assets/white1.png" alt="White Theme 1">
+        <div class="cap">White Edition – Exterior Front</div>
+      </div>
+      <div class="renderCard">
+        <img src="assets/white2.png" alt="White Theme 2">
+        <div class="cap">White Edition – Angled View</div>
+      </div>
+      <div class="renderCard">
+        <img src="assets/white3.png" alt="White Theme 3">
+        <div class="cap">White Edition – Rooftop</div>
+      </div>
+
+      <!-- PINK ROW -->
+      <div class="renderCard">
+        <img src="assets/pink1.png" alt="Pink Theme 1">
+        <div class="cap">Pink Edition – Exterior Front</div>
+      </div>
+      <div class="renderCard">
+        <img src="assets/pink2.png" alt="Pink Theme 2">
+        <div class="cap">Pink Edition – Angled View</div>
+      </div>
+      <div class="renderCard">
+        <img src="assets/pink3.png" alt="Pink Theme 3">
+        <div class="cap">Pink Edition – Rooftop</div>
+      </div>
+
+      <!-- LIGHT BROWN ROW -->
+      <div class="renderCard">
+        <img src="assets/brown1.png" alt="Light Brown Theme 1">
+        <div class="cap">Light Brown Edition – Exterior Front</div>
+      </div>
+      <div class="renderCard">
+        <img src="assets/brown2.png" alt="Light Brown Theme 2">
+        <div class="cap">Light Brown Edition – Angled View</div>
+      </div>
+      <div class="renderCard">
+        <img src="assets/brown3.png" alt="Light Brown Theme 3">
+        <div class="cap">Light Brown Edition – Rooftop</div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  Made by <b>Kayode Louis</b>
+</footer>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,301 @@
+:root{
+  --bg:#0b1020;
+  --panel:#111a35;
+  --panel2:#0f1833;
+  --text:#eaf0ff;
+  --muted:#a9b8e6;
+  --line:#1e2a52;
+  --btn:#2e4cff;
+  --btn2:#1c2a55;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family: Arial, sans-serif;
+}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* HEADER */
+.topbar{
+  padding:22px 28px;
+  background:var(--panel);
+  border-bottom:1px solid var(--line);
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:18px;
+  flex-wrap:wrap;
+}
+
+.brandTitle{
+  font-size:26px;
+  font-weight:800;
+  letter-spacing:2px;
+}
+
+.brandSub{
+  font-size:13px;
+  color:var(--muted);
+  margin-top:5px;
+}
+
+/* CONTROLS */
+.controls{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.control{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:12px;
+  color:var(--muted);
+}
+
+select, button{
+  padding:10px 14px;
+  border-radius:10px;
+  border:none;
+  font-size:14px;
+}
+
+select{
+  background:#0d1633;
+  color:var(--text);
+  border:1px solid var(--line);
+}
+
+.btn{
+  background:var(--btn);
+  color:white;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.btn:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.08);
+}
+
+.btnSecondary{
+  background:var(--btn2);
+  color:white;
+  border:1px solid #233260;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.btnSecondary:hover{
+  filter:brightness(1.08);
+}
+
+/* MAIN */
+.container{
+  max-width:1300px;
+  margin:auto;
+  padding:30px 22px;
+}
+
+.section{
+  margin-bottom:42px;
+  background:rgba(255,255,255,0.02);
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:18px;
+  padding:18px;
+}
+
+.sectionHeader h2{
+  font-size:20px;
+  margin-bottom:6px;
+}
+
+.sectionHeader p{
+  color:var(--muted);
+  font-size:13px;
+}
+
+/* PLANS GRID */
+.plansGrid{
+  margin-top:18px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(420px, 1fr));
+  gap:18px;
+}
+
+.planCard{
+  background:var(--panel2);
+  border:1px solid var(--line);
+  border-radius:16px;
+  overflow:hidden;
+  transition:0.25s;
+}
+
+.planCard:hover{
+  transform:translateY(-4px);
+  box-shadow:0 12px 28px rgba(0,0,0,0.45);
+}
+
+.planTop{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px;
+  border-bottom:1px solid var(--line);
+}
+
+.planTitle{
+  font-weight:800;
+  font-size:14px;
+}
+
+.planMeta{
+  font-size:12px;
+  color:var(--muted);
+  margin-top:4px;
+}
+
+.planCanvas{
+  background:#0e162f;
+  padding:14px;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  overflow:auto;
+  min-height:460px;
+}
+
+/* ROOF */
+.roofWrap{
+  margin-top:18px;
+  background:var(--panel2);
+  border:1px solid var(--line);
+  border-radius:16px;
+  overflow:hidden;
+}
+
+.roofHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px;
+  border-bottom:1px solid var(--line);
+  gap:10px;
+}
+
+.roofTitle{ font-weight:800; }
+
+.roofMeta{
+  font-size:12px;
+  color:var(--muted);
+  margin-top:4px;
+}
+
+/* ===============================
+   STRONG 16:9 GALLERY FIX
+================================= */
+
+.gallery{
+  margin-top:18px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:18px;
+}
+
+.renderCard{
+  position:relative;
+  width:100%;
+  padding-top:56.25%; /* 16:9 ratio */
+  background:var(--panel2);
+  border:1px solid var(--line);
+  border-radius:16px;
+  overflow:hidden;
+  transition:0.25s;
+}
+
+.renderCard:hover{
+  transform:translateY(-4px);
+  box-shadow:0 12px 28px rgba(0,0,0,0.45);
+}
+.renderCard img{
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  object-fit:contain;   /* FULL image visible */
+  background:#111a35;   /* fills empty space */
+  display:block;
+}
+
+.renderCard .cap{
+  position:absolute;
+  bottom:0;
+  left:0;
+  width:100%;
+  padding:12px 14px;
+  font-size:13px;
+  color:white;
+  background:linear-gradient(to top, rgba(0,0,0,0.75), transparent);
+}
+
+/* FOOTER */
+.footer{
+  text-align:center;
+  padding:20px;
+  background:var(--panel);
+  border-top:1px solid var(--line);
+  margin-top:30px;
+}
+
+/* RESPONSIVE */
+@media(max-width:1000px){
+  .gallery{ grid-template-columns:1fr 1fr; }
+}
+
+@media(max-width:650px){
+  .gallery{ grid-template-columns:1fr; }
+  .plansGrid{ grid-template-columns:1fr; }
+}
+
+/* 3D VIEWER */
+.threeWrap{
+  margin-top:18px;
+  background:var(--panel2);
+  border:1px solid var(--line);
+  border-radius:16px;
+  overflow:hidden;
+}
+
+.threeControls{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+  padding:14px;
+  border-bottom:1px solid var(--line);
+}
+
+.threeCanvas{
+  height:520px;
+  background:#0e162f;
+}
+
+.threeHint{
+  padding:10px 14px;
+  font-size:12px;
+  color:var(--muted);
+  border-top:1px solid var(--line);
+}
+
+input[type="range"]{
+  width:160px;
+}
