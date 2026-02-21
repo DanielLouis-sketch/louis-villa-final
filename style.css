@@ -234,7 +234,6 @@ select{
   object-fit:contain;   /* FULL image visible */
   background:#111a35;   /* fills empty space */
   display:block;
-}
 
 .renderCard .cap{
   position:absolute;
@@ -285,7 +284,7 @@ select{
 }
 
 .threeCanvas{
-  height:520px;
+  height:540px;
   background:#0e162f;
 }
 
@@ -299,3 +298,15 @@ select{
 input[type="range"]{
   width:160px;
 }
+
+.control.toggle{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  padding:8px 10px;
+  border-radius:12px;
+}
+
+.control.toggle input{
+  accent-color: var(--btn);
+}
+

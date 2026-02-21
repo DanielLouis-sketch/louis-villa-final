@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
       <div class="planCanvas" id="${f.id}"></div>
     `;
-    plansGrid.appendChild(card);
+    plansGrid?.appendChild(card);
 
     const canvas = card.querySelector(`#${f.id}`);
     const svg = buildFloorSVG({ topLabel: f.topLabel });
@@ -37,10 +37,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Roof plan
-  roofCanvas.appendChild(buildRoofSVG());
+  roofCanvas?.appendChild(buildRoofSVG());
 
   // Zoom plans
-  scaleSelect.addEventListener("change", () => {
+  scaleSelect?.addEventListener("change", () => {
     currentScale = Number(scaleSelect.value);
     document.querySelectorAll("svg[data-scalable='true']").forEach(svg => {
       svg.style.transform = `scale(${currentScale})`;
@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const id = btn.getAttribute("data-download");
 
     if (id === "roof") {
-      downloadSVG(roofCanvas.querySelector("svg"), "Louis_Villa_Roof.svg");
+      downloadSVG(roofCanvas?.querySelector("svg"), "Louis_Villa_Roof.svg");
       return;
     }
 
@@ -64,12 +64,12 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Download all plans
-  downloadAllBtn.addEventListener("click", () => {
+  downloadAllBtn?.addEventListener("click", () => {
     floors.forEach(f => {
       const svg = document.getElementById(f.id)?.querySelector("svg");
       downloadSVG(svg, `Louis_Villa_${f.id}.svg`);
     });
-    downloadSVG(roofCanvas.querySelector("svg"), "Louis_Villa_Roof.svg");
+    downloadSVG(roofCanvas?.querySelector("svg"), "Louis_Villa_Roof.svg");
   });
 
   // Apply initial zoom
@@ -77,13 +77,10 @@ document.addEventListener("DOMContentLoaded", () => {
     svg.style.transform = `scale(${currentScale})`;
   });
 
-  
-
-  // Initialize 3D viewer (interactive)
+  // 3D viewer
   init3DViewer();
 
-// ---------- SVG Builders ----------
-
+  // ---------- SVG Builders ----------
   function buildFloorSVG({ topLabel }) {
     const svg = svgEl("svg");
     svg.setAttribute("width", "980");
@@ -158,7 +155,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ---------- Helpers ----------
-
   function downloadSVG(svg, filename) {
     if (!svg) return;
     const serializer = new XMLSerializer();
@@ -202,9 +198,8 @@ document.addEventListener("DOMContentLoaded", () => {
     return t;
   }
 
-  // ---------- 3D Viewer (Three.js) ----------
-
-  // ---------- Minimal Orbit Controls (no external dependency) ----------
+  // ---------- 3D Viewer ----------
+  // Minimal orbit controls (no external OrbitControls dependency).
   // Left-drag: rotate • Wheel: zoom • Right-drag / Shift+drag: pan
   function createBasicOrbitControls(camera, domEl, opts = {}) {
     const target = opts.target ? opts.target.clone() : new THREE.Vector3();
@@ -213,7 +208,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const maxRadius = opts.maxRadius ?? 1500;
     const damping = opts.damping ?? 0.12;
 
-    // Start angles from current camera position
     const offset = new THREE.Vector3().subVectors(camera.position, target);
     const spherical = new THREE.Spherical().setFromVector3(offset);
 
@@ -236,8 +230,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function pan(dx, dy) {
-      // Pan in camera space
-      const panSpeed = radius / 500; // scale with zoom
+      const panSpeed = radius / 500;
       const v = new THREE.Vector3();
       const right = new THREE.Vector3();
       const up = new THREE.Vector3();
@@ -267,7 +260,6 @@ document.addEventListener("DOMContentLoaded", () => {
       lastY = e.clientY;
 
       if (isRotating) {
-        // radians per pixel
         velTheta += -dx * 0.006;
         velPhi += -dy * 0.006;
       } else {
@@ -288,9 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
       velRadius += delta * 18;
     }
 
-    function onContextMenu(e) {
-      e.preventDefault();
-    }
+    function onContextMenu(e) { e.preventDefault(); }
 
     domEl.addEventListener("pointerdown", onPointerDown);
     window.addEventListener("pointermove", onPointerMove);
@@ -299,7 +289,6 @@ document.addEventListener("DOMContentLoaded", () => {
     domEl.addEventListener("contextmenu", onContextMenu);
 
     function update() {
-      // apply damping
       velTheta *= (1 - damping);
       velPhi *= (1 - damping);
       velPanX *= (1 - damping);
@@ -322,15 +311,7 @@ document.addEventListener("DOMContentLoaded", () => {
       camera.lookAt(target);
     }
 
-    function dispose() {
-      domEl.removeEventListener("pointerdown", onPointerDown);
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerup", onPointerUp);
-      domEl.removeEventListener("wheel", onWheel);
-      domEl.removeEventListener("contextmenu", onContextMenu);
-    }
-
-    function reset(camPos = new THREE.Vector3(220, 190, 220), newTarget = new THREE.Vector3(0, 20, 0)) {
+    function reset(camPos = new THREE.Vector3(220, 190, 220), newTarget = new THREE.Vector3(0, 18, 0)) {
       target.copy(newTarget);
       camera.position.copy(camPos);
       const off = new THREE.Vector3().subVectors(camera.position, target);
@@ -339,25 +320,30 @@ document.addEventListener("DOMContentLoaded", () => {
       velTheta = velPhi = velPanX = velPanY = velRadius = 0;
     }
 
-    return { target, update, dispose, reset, get radius() { return radius; }, set radius(v) { radius = v; } };
+    return { target, update, reset, get radius() { return radius; }, set radius(v) { radius = v; } };
   }
 
   function init3DViewer() {
     const container = document.getElementById("threeContainer");
+    const hint = document.getElementById("threeHint");
+
+    const modeSelect = document.getElementById("modeSelect");
     const viewSelect = document.getElementById("viewSelect");
     const explodeRange = document.getElementById("explodeRange");
     const resetBtn = document.getElementById("resetCamBtn");
-    const hint = document.getElementById("threeHint");
+    const fitRoomBtn = document.getElementById("fitRoomBtn");
+    const wallsToggle = document.getElementById("wallsToggle");
+    const ceilingToggle = document.getElementById("ceilingToggle");
+    const labelsToggle = document.getElementById("labelsToggle");
 
     if (!container) return;
 
-    // Three.js is loaded as an ES module. If it failed, show a helpful message.
+    // Three.js is an ES module. If it failed, show a helpful message.
     if (!THREE) {
       if (hint) hint.textContent = "3D library failed to load. Check your internet/CDN access.";
       return;
     }
 
-    // Clear container
     container.innerHTML = "";
 
     const scene = new THREE.Scene();
@@ -370,18 +356,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 5000);
     camera.position.set(220, 190, 220);
 
-    // Lightweight orbit controls (no external OrbitControls dependency).
     const controls = createBasicOrbitControls(camera, renderer.domElement, {
-      target: new THREE.Vector3(0, 20, 0),
+      target: new THREE.Vector3(0, 18, 0),
       minRadius: 120,
       maxRadius: 900,
       damping: 0.10,
     });
 
     // Lights
-    const hemi = new THREE.HemisphereLight(0xffffff, 0x203050, 1.0);
-    scene.add(hemi);
-
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x203050, 1.0));
     const dir = new THREE.DirectionalLight(0xffffff, 0.85);
     dir.position.set(200, 260, 120);
     scene.add(dir);
@@ -391,60 +374,94 @@ document.addEventListener("DOMContentLoaded", () => {
     grid.position.y = 0;
     scene.add(grid);
 
-    // ----- Geometry mapping from your SVG plan -----
-    // These coordinates match the rectangles in buildFloorSVG() (app.js).  
+    // ----- Plan data (matches the rectangles in buildFloorSVG) -----
     const rooms = [
       { id: "balcony",  x: 170, y: 80,  w: 640, h: 70,  color: 0x2a2f45, label: "Balcony" },
       { id: "parlour",  x: 105, y: 185, w: 420, h: 270, color: 0x203a7a, label: "Big Parlour" },
       { id: "guestWC",  x: 545, y: 185, w: 160, h: 130, color: 0x6a2f63, label: "Guest Toilet" },
       { id: "bed3",     x: 720, y: 185, w: 170, h: 130, color: 0x1a5b4a, label: "Bedroom 3" },
-      { id: "wc3",      x: 720, y: 320, w: 170, h: 95,  color: 0x6a2f63, label: "Toilet" },
+      { id: "wc3",      x: 720, y: 320, w: 170, h: 95,  color: 0x6a2f63, label: "Toilet (B3)" },
       { id: "bed1",     x: 105, y: 470, w: 270, h: 160, color: 0x1a5b4a, label: "Bedroom 1" },
-      { id: "wc1",      x: 380, y: 470, w: 145, h: 110, color: 0x6a2f63, label: "Toilet" },
+      { id: "wc1",      x: 380, y: 470, w: 145, h: 110, color: 0x6a2f63, label: "Toilet (B1)" },
       { id: "bed2",     x: 545, y: 470, w: 270, h: 160, color: 0x1a5b4a, label: "Bedroom 2" },
-      { id: "wc2",      x: 820, y: 470, w: 90,  h: 110, color: 0x6a2f63, label: "Toilet" },
+      { id: "wc2",      x: 820, y: 470, w: 90,  h: 110, color: 0x6a2f63, label: "Toilet (B2)" },
       { id: "corridor", x: 545, y: 330, w: 170, h: 110, color: 0x2a2f45, label: "Corridor" },
     ];
 
-    // Outer wall footprint (from buildFloorSVG outer wall)
     const outer = { x: 70, y: 120, w: 840, h: 520 };
 
     // Convert SVG coordinate space to 3D units
-    const S = 0.22; // scale down to nice units
+    const S = 0.22;
     const cx = outer.x + outer.w / 2;
     const cy = outer.y + outer.h / 2;
 
-    const slabThickness = 6;
-    const roomHeight = 18;
-    const floorGap = 26;
+    // World scale constants (in "three units")
+    const slabThickness = 4;
+    const roomBlockHeight = 18; // used in stack mode
+    const wallHeight = 22;
+    const wallThickness = 5 * S; // in world units (already scaled)
+    const floorGap = 28;
 
-    const materialCache = new Map();
-    function mat(hex) {
-      if (materialCache.has(hex)) return materialCache.get(hex);
-      const m = new THREE.MeshStandardMaterial({ color: hex, metalness: 0.05, roughness: 0.9 });
-      materialCache.set(hex, m);
+    const matCache = new Map();
+    function mat(hex, kind="default") {
+      const key = `${hex}:${kind}`;
+      if (matCache.has(key)) return matCache.get(key);
+      const m = new THREE.MeshStandardMaterial({
+        color: hex,
+        metalness: 0.05,
+        roughness: 0.9,
+        emissive: 0x000000,
+        emissiveIntensity: 0.7,
+      });
+      matCache.set(key, m);
       return m;
     }
 
-    function makeBox(x, y, w, h, height, color) {
+    function planToWorldX(px) { return (px - cx) * S; }
+    function planToWorldZ(py) { return (py - cy) * S; }
+
+    function makeBoxPlan(x, y, w, h, height, color) {
       const geo = new THREE.BoxGeometry(w * S, height, h * S);
       const mesh = new THREE.Mesh(geo, mat(color));
-      mesh.position.set((x + w / 2 - cx) * S, height / 2, (y + h / 2 - cy) * S);
+      mesh.position.set(planToWorldX(x + w / 2), height / 2, planToWorldZ(y + h / 2));
       return mesh;
     }
 
-    function makeOutline(x, y, w, h) {
-      // A low "wall" outline
-      const geo = new THREE.BoxGeometry(w * S, 2.2, h * S);
-      const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0, roughness: 1 }));
-      mesh.position.set((x + w / 2 - cx) * S, 1.1, (y + h / 2 - cy) * S);
-      return mesh;
+    function makeTextSprite(text) {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const pad = 18;
+      ctx.font = "bold 34px Arial";
+      const w = Math.ceil(ctx.measureText(text).width) + pad * 2;
+      const h = 64;
+      canvas.width = w;
+      canvas.height = h;
+
+      ctx.fillStyle = "rgba(17,26,53,0.88)";
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.strokeStyle = "rgba(46,76,255,0.9)";
+      ctx.lineWidth = 4;
+      ctx.strokeRect(2, 2, w - 4, h - 4);
+
+      ctx.fillStyle = "white";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = "bold 32px Arial";
+      ctx.fillText(text, w / 2, h / 2);
+
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.minFilter = THREE.LinearFilter;
+      const sm = new THREE.SpriteMaterial({ map: tex, transparent: true });
+      const sprite = new THREE.Sprite(sm);
+      sprite.scale.set((w / 7.8) * 0.9, (h / 7.8) * 0.9, 1);
+      return sprite;
     }
 
-    function buildFloorGroup(floorIndex) {
+    // --- STACK MODE (your current model) ---
+    function buildStackFloorGroup(floorIndex) {
       const g = new THREE.Group();
 
-      // slab
       const slabGeo = new THREE.BoxGeometry(outer.w * S, slabThickness, outer.h * S);
       const slab = new THREE.Mesh(
         slabGeo,
@@ -454,123 +471,378 @@ document.addEventListener("DOMContentLoaded", () => {
       g.add(slab);
 
       // outline
-      g.add(makeOutline(outer.x, outer.y, outer.w, outer.h));
+      const outlineGeo = new THREE.BoxGeometry(outer.w * S, 2.2, outer.h * S);
+      const outline = new THREE.Mesh(outlineGeo, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1 }));
+      outline.position.set(0, 1.1, 0);
+      g.add(outline);
 
-      // rooms
       rooms.forEach(r => {
-        const box = makeBox(r.x, r.y, r.w, r.h, roomHeight, r.color);
-        box.position.y = slabThickness + roomHeight / 2;
+        const box = makeBoxPlan(r.x, r.y, r.w, r.h, roomBlockHeight, r.color);
+        box.position.y = slabThickness + roomBlockHeight / 2;
         g.add(box);
       });
 
-      // label plate (only floor 4 in your 2D shows top label, but in 3D we label all floors)
       const label = makeTextSprite(`Floor ${floorIndex + 1}`);
-      label.position.set(0, slabThickness + roomHeight + 8, -outer.h * S * 0.42);
+      label.position.set(0, slabThickness + roomBlockHeight + 8, -outer.h * S * 0.42);
+      label.userData.__label = true;
       g.add(label);
 
       return g;
     }
 
-    function buildRoofGroup() {
+    function buildStackRoofGroup() {
       const g = new THREE.Group();
       const roofGeo = new THREE.BoxGeometry(outer.w * S, 10, outer.h * S);
-      const roof = new THREE.Mesh(
-        roofGeo,
-        new THREE.MeshStandardMaterial({ color: 0x1c2a55, metalness: 0.03, roughness: 0.95 })
-      );
+      const roof = new THREE.Mesh(roofGeo, new THREE.MeshStandardMaterial({ color: 0x1c2a55, roughness: 0.95 }));
       roof.position.set(0, 5, 0);
       g.add(roof);
 
       const signGeo = new THREE.BoxGeometry(540 * S, 8, 60 * S);
       const sign = new THREE.Mesh(signGeo, mat(0x2e4cff));
-      // matches roof sign placement roughly (x=220..760, y=420..480)
-      const signX = (220 + 540 / 2 - cx) * S;
-      const signZ = (420 + 60 / 2 - cy) * S;
-      sign.position.set(signX, 14, signZ);
+      sign.position.set(planToWorldX(220 + 540 / 2), 14, planToWorldZ(420 + 60 / 2));
       g.add(sign);
 
       const label = makeTextSprite("ROOF");
       label.position.set(0, 28, -outer.h * S * 0.42);
+      label.userData.__label = true;
       g.add(label);
 
       return g;
     }
 
-    function makeTextSprite(text) {
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-      const pad = 18;
-      ctx.font = "bold 36px Arial";
-      const w = Math.ceil(ctx.measureText(text).width) + pad * 2;
-      const h = 64;
-      canvas.width = w;
-      canvas.height = h;
-
-      // background
-      ctx.fillStyle = "rgba(17,26,53,0.85)";
-      ctx.fillRect(0, 0, w, h);
-
-      // border
-      ctx.strokeStyle = "rgba(46,76,255,0.9)";
-      ctx.lineWidth = 4;
-      ctx.strokeRect(2, 2, w - 4, h - 4);
-
-      // text
-      ctx.fillStyle = "white";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.font = "bold 34px Arial";
-      ctx.fillText(text, w / 2, h / 2);
-
-      const tex = new THREE.CanvasTexture(canvas);
-      tex.minFilter = THREE.LinearFilter;
-
-      const mat = new THREE.SpriteMaterial({ map: tex, transparent: true });
-      const sprite = new THREE.Sprite(mat);
-      sprite.scale.set((w / 7.5) * 0.9, (h / 7.5) * 0.9, 1);
-      return sprite;
+    // --- INTERIOR MODE (professional) ---
+    function addSegment(segments, x1, y1, x2, y2) {
+      // Normalize order so duplicates match
+      const horiz = Math.abs(y1 - y2) < 1e-6;
+      const vert = Math.abs(x1 - x2) < 1e-6;
+      let key;
+      if (horiz) {
+        const a = Math.min(x1, x2), b = Math.max(x1, x2);
+        key = `H:${y1.toFixed(2)}:${a.toFixed(2)}:${b.toFixed(2)}`;
+      } else if (vert) {
+        const a = Math.min(y1, y2), b = Math.max(y1, y2);
+        key = `V:${x1.toFixed(2)}:${a.toFixed(2)}:${b.toFixed(2)}`;
+      } else {
+        // should not happen for rectangles
+        key = `D:${x1}:${y1}:${x2}:${y2}`;
+      }
+      if (!segments.has(key)) segments.set(key, { x1, y1, x2, y2, key });
     }
 
-    const floors3D = [
-      buildFloorGroup(0),
-      buildFloorGroup(1),
-      buildFloorGroup(2),
-      buildFloorGroup(3),
-    ];
-    const roof3D = buildRoofGroup();
+    function buildWallsFromSegments(segMap, yBase, wallMat) {
+      const wallsGroup = new THREE.Group();
 
-    const root = new THREE.Group();
-    floors3D.forEach(f => root.add(f));
-    root.add(roof3D);
-    scene.add(root);
+      for (const seg of segMap.values()) {
+        const horiz = Math.abs(seg.y1 - seg.y2) < 1e-6;
+        const xMid = (seg.x1 + seg.x2) / 2;
+        const yMid = (seg.y1 + seg.y2) / 2;
 
+        if (horiz) {
+          const len = Math.abs(seg.x2 - seg.x1) * S;
+          const geo = new THREE.BoxGeometry(len, wallHeight, wallThickness);
+          const mesh = new THREE.Mesh(geo, wallMat);
+          mesh.position.set(planToWorldX(xMid), yBase + wallHeight / 2, planToWorldZ(yMid));
+          wallsGroup.add(mesh);
+        } else {
+          const len = Math.abs(seg.y2 - seg.y1) * S;
+          const geo = new THREE.BoxGeometry(wallThickness, wallHeight, len);
+          const mesh = new THREE.Mesh(geo, wallMat);
+          mesh.position.set(planToWorldX(xMid), yBase + wallHeight / 2, planToWorldZ(yMid));
+          wallsGroup.add(mesh);
+        }
+      }
+
+      return wallsGroup;
+    }
+
+    function buildInteriorFloorGroup(floorIndex) {
+      const g = new THREE.Group();
+
+      // floor slab
+      const slabGeo = new THREE.BoxGeometry(outer.w * S, slabThickness, outer.h * S);
+      const slab = new THREE.Mesh(
+        slabGeo,
+        new THREE.MeshStandardMaterial({ color: 0x111a35, metalness: 0.02, roughness: 0.95 })
+      );
+      slab.position.set(0, slabThickness / 2, 0);
+      slab.userData.__slab = true;
+      g.add(slab);
+
+      // Room floors (clickable)
+      const roomFloors = new THREE.Group();
+      roomFloors.userData.__roomFloors = true;
+      rooms.forEach(r => {
+        const geo = new THREE.BoxGeometry(r.w * S, 1.2, r.h * S);
+        const m = mat(r.color, "floor").clone();
+        m.roughness = 0.95;
+        m.metalness = 0.02;
+        m.emissive = new THREE.Color(0x000000);
+        const mesh = new THREE.Mesh(geo, m);
+        mesh.position.set(planToWorldX(r.x + r.w / 2), slabThickness + 0.6, planToWorldZ(r.y + r.h / 2));
+        mesh.userData.__roomId = r.id;
+        mesh.userData.__roomLabel = r.label;
+        mesh.userData.__roomRect = { ...r };
+        roomFloors.add(mesh);
+      });
+      g.add(roomFloors);
+
+      // Build wall segments from outer boundary + all room rectangles.
+      const segs = new Map();
+
+      // Outer rectangle
+      addSegment(segs, outer.x, outer.y, outer.x + outer.w, outer.y);                 // top
+      addSegment(segs, outer.x, outer.y + outer.h, outer.x + outer.w, outer.y + outer.h); // bottom
+      addSegment(segs, outer.x, outer.y, outer.x, outer.y + outer.h);                 // left
+      addSegment(segs, outer.x + outer.w, outer.y, outer.x + outer.w, outer.y + outer.h); // right
+
+      // Inner partitions (rooms)
+      rooms.forEach(r => {
+        addSegment(segs, r.x, r.y, r.x + r.w, r.y);           // top
+        addSegment(segs, r.x, r.y + r.h, r.x + r.w, r.y + r.h); // bottom
+        addSegment(segs, r.x, r.y, r.x, r.y + r.h);           // left
+        addSegment(segs, r.x + r.w, r.y, r.x + r.w, r.y + r.h); // right
+      });
+
+      const wallMat = new THREE.MeshStandardMaterial({
+        color: 0xeaf0ff,
+        roughness: 0.92,
+        metalness: 0.02,
+      });
+
+      const walls = buildWallsFromSegments(segs, slabThickness, wallMat);
+      walls.userData.__walls = true;
+      g.add(walls);
+
+      // Ceiling (toggle)
+      const ceilGeo = new THREE.BoxGeometry(outer.w * S, 1.6, outer.h * S);
+      const ceilMat = new THREE.MeshStandardMaterial({
+        color: 0x0f1833,
+        roughness: 0.98,
+        metalness: 0.0,
+        transparent: true,
+        opacity: 0.75,
+      });
+      const ceil = new THREE.Mesh(ceilGeo, ceilMat);
+      ceil.position.set(0, slabThickness + wallHeight + 1.0, 0);
+      ceil.userData.__ceiling = true;
+      ceil.visible = false;
+      g.add(ceil);
+
+      // Labels (toggle)
+      const labels = new THREE.Group();
+      labels.userData.__labels = true;
+      rooms.forEach(r => {
+        const s = makeTextSprite(r.label);
+        s.position.set(planToWorldX(r.x + r.w/2), slabThickness + wallHeight + 8, planToWorldZ(r.y + r.h/2));
+        s.userData.__label = true;
+        labels.add(s);
+      });
+      g.add(labels);
+
+      // Floor label
+      const fl = makeTextSprite(`Floor ${floorIndex + 1}`);
+      fl.position.set(0, slabThickness + wallHeight + 12, -outer.h * S * 0.42);
+      fl.userData.__label = true;
+      labels.add(fl);
+
+      return g;
+    }
+
+    // Root groups
+    const stackRoot = new THREE.Group();
+    const interiorRoot = new THREE.Group();
+    interiorRoot.visible = false;
+
+    const stackFloors = [0,1,2,3].map(i => buildStackFloorGroup(i));
+    const stackRoof = buildStackRoofGroup();
+
+    stackFloors.forEach(g => stackRoot.add(g));
+    stackRoot.add(stackRoof);
+
+    const interiorFloors = [0,1,2,3].map(i => buildInteriorFloorGroup(i));
+    const interiorRoof = buildStackRoofGroup(); // roof stays simple in interior mode
+    interiorRoof.userData.__roof = true;
+    interiorFloors.forEach(g => interiorRoot.add(g));
+    interiorRoot.add(interiorRoof);
+
+    scene.add(stackRoot);
+    scene.add(interiorRoot);
+
+    // Selection + interaction
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    let hovered = null;
+    let selected = null;
+
+    function setHover(mesh) {
+      if (hovered && hovered.material) hovered.material.emissive.setHex(0x000000);
+      hovered = mesh;
+      if (hovered && hovered.material) hovered.material.emissive.setHex(0x2030ff);
+    }
+
+    function setSelected(mesh) {
+      if (selected && selected.material) {
+        selected.material.emissive.setHex(0x000000);
+        selected.material.emissiveIntensity = 0.7;
+      }
+      selected = mesh;
+      if (selected && selected.material) {
+        selected.material.emissive.setHex(0x2e4cff);
+        selected.material.emissiveIntensity = 1.25;
+      }
+    }
+
+    // Camera tween
+    let tween = null;
+    function startCameraTween({ targetPos, targetLookAt, duration = 520 }) {
+      const fromPos = camera.position.clone();
+      const fromTarget = controls.target.clone();
+      const t0 = performance.now();
+      tween = () => {
+        const t = (performance.now() - t0) / duration;
+        const k = Math.min(1, Math.max(0, t));
+        const ease = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k + 2, 2)/2;
+
+        camera.position.lerpVectors(fromPos, targetPos, ease);
+        controls.target.lerpVectors(fromTarget, targetLookAt, ease);
+        if (k >= 1) tween = null;
+      };
+    }
+
+    function focusRoom(mesh) {
+      if (!mesh) return;
+      const rect = mesh.userData.__roomRect;
+      const center = new THREE.Vector3(planToWorldX(rect.x + rect.w/2), slabThickness + 10, planToWorldZ(rect.y + rect.h/2));
+      const size = Math.max(rect.w, rect.h) * S;
+      const camOffset = new THREE.Vector3(size * 1.2, size * 0.95 + 40, size * 1.2);
+      const pos = center.clone().add(camOffset);
+      startCameraTween({ targetPos: pos, targetLookAt: center, duration: 650 });
+    }
+
+    function pick(event) {
+      const bounds = renderer.domElement.getBoundingClientRect();
+      mouse.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
+      mouse.y = -(((event.clientY - bounds.top) / bounds.height) * 2 - 1);
+
+      raycaster.setFromCamera(mouse, camera);
+
+      if (!interiorRoot.visible) {
+        setHover(null);
+        return;
+      }
+
+      const roomFloors = [];
+      interiorRoot.traverse(obj => {
+        if (obj.isMesh && obj.userData.__roomId) roomFloors.push(obj);
+      });
+
+      const hits = raycaster.intersectObjects(roomFloors, false);
+      if (hits.length) {
+        setHover(hits[0].object);
+        renderer.domElement.style.cursor = "pointer";
+      } else {
+        setHover(null);
+        renderer.domElement.style.cursor = "";
+      }
+    }
+
+    renderer.domElement.addEventListener("pointermove", pick);
+
+    renderer.domElement.addEventListener("click", (e) => {
+      if (!interiorRoot.visible) return;
+      const bounds = renderer.domElement.getBoundingClientRect();
+      mouse.x = ((e.clientX - bounds.left) / bounds.width) * 2 - 1;
+      mouse.y = -(((e.clientY - bounds.top) / bounds.height) * 2 - 1);
+      raycaster.setFromCamera(mouse, camera);
+
+      const roomFloors = [];
+      interiorRoot.traverse(obj => {
+        if (obj.isMesh && obj.userData.__roomId) roomFloors.push(obj);
+      });
+
+      const hits = raycaster.intersectObjects(roomFloors, false);
+      if (hits.length) {
+        const mesh = hits[0].object;
+        setSelected(mesh);
+        focusRoom(mesh);
+        if (hint) hint.textContent = `Selected: ${mesh.userData.__roomLabel} — click another room to focus`;
+      }
+    });
+
+    fitRoomBtn?.addEventListener("click", () => {
+      if (!selected) return;
+      focusRoom(selected);
+    });
+
+    // Layout
     function applyView() {
       const view = viewSelect?.value || "all";
+      const roots = interiorRoot.visible ? interiorFloors : stackFloors;
 
-      floors3D.forEach((g, i) => (g.visible = view === "all" || view === `floor${i + 1}`));
-      roof3D.visible = view === "all" || view === "roof";
+      roots.forEach((g, i) => (g.visible = view === "all" || view === `floor${i + 1}`));
+      if (interiorRoot.visible) {
+        interiorRoof.visible = view === "all" || view === "roof";
+      } else {
+        stackRoof.visible = view === "all" || view === "roof";
+      }
     }
 
     function applyExplode() {
       const explode = Number(explodeRange?.value ?? 40);
-      floors3D.forEach((g, i) => {
-        g.position.y = i * floorGap + i * (explode * 0.15);
-      });
-      roof3D.position.y = floors3D.length * floorGap + floors3D.length * (explode * 0.15);
+      const amt = explode * 0.15;
+      const roots = interiorRoot.visible ? interiorFloors : stackFloors;
+      roots.forEach((g, i) => { g.position.y = i * floorGap + i * amt; });
+      const roofY = roots.length * floorGap + roots.length * amt;
+      if (interiorRoot.visible) interiorRoof.position.y = roofY;
+      else stackRoof.position.y = roofY;
     }
 
-    viewSelect?.addEventListener("change", () => {
-      applyView();
-    });
+    function applyToggles() {
+      const showWalls = wallsToggle?.checked ?? true;
+      const showCeil = ceilingToggle?.checked ?? false;
+      const showLabels = labelsToggle?.checked ?? true;
 
-    explodeRange?.addEventListener("input", () => {
+      interiorFloors.forEach(f => {
+        f.traverse(obj => {
+          if (obj.userData.__walls) obj.visible = showWalls;
+          if (obj.userData.__ceiling) obj.visible = showCeil;
+          if (obj.userData.__labels) obj.visible = showLabels;
+          if (obj.userData.__label && obj.parent?.userData.__labels) obj.visible = showLabels;
+        });
+      });
+    }
+
+    function applyMode() {
+      const mode = modeSelect?.value || "stack";
+      const interior = mode === "interior";
+      interiorRoot.visible = interior;
+      stackRoot.visible = !interior;
+
+      // Good default camera for interior
+      if (interior) {
+        controls.reset(new THREE.Vector3(190, 210, 190), new THREE.Vector3(0, slabThickness + 10, 0));
+        if (hint) hint.textContent = "Interior mode: click a room to focus • toggle walls/ceiling/labels";
+      } else {
+        controls.reset(new THREE.Vector3(220, 190, 220), new THREE.Vector3(0, 18, 0));
+        if (hint) hint.textContent = "Stack mode: inspect floors • use Explode to separate";
+      }
+
+      applyView();
       applyExplode();
-    });
+      applyToggles();
+      setHover(null);
+      setSelected(null);
+    }
+
+    modeSelect?.addEventListener("change", applyMode);
+    viewSelect?.addEventListener("change", applyView);
+    explodeRange?.addEventListener("input", applyExplode);
+    wallsToggle?.addEventListener("change", applyToggles);
+    ceilingToggle?.addEventListener("change", applyToggles);
+    labelsToggle?.addEventListener("change", applyToggles);
 
     resetBtn?.addEventListener("click", () => {
-      camera.position.set(220, 190, 220);
-      controls.target.set(0, 20, 0);
-      controls.update();
+      applyMode(); // resets to mode defaults
     });
 
     function resize() {
@@ -585,16 +857,14 @@ document.addEventListener("DOMContentLoaded", () => {
     ro.observe(container);
     resize();
 
-    applyView();
-    applyExplode();
+    applyMode();
 
     function animate() {
       controls.update();
+      if (tween) tween();
       renderer.render(scene, camera);
       requestAnimationFrame(animate);
     }
     animate();
   }
-
-
 });

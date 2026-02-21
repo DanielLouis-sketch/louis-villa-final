@@ -51,16 +51,25 @@
       </div>
       <div class="planCanvas" id="roofCanvas"></div>
     </div>
-  
+  </section>
+
   <!-- INTERACTIVE 3D SECTION -->
   <section class="section">
     <div class="sectionHeader">
-      <h2>Interactive 3D Model</h2>
-      <p>Rotate, zoom, and inspect the building stack. Use “Explode” to separate floors.</p>
+      <h2>Interactive 3D Floor Plan</h2>
+      <p>Professional viewer: switch between building stack and interior layout. Click a room to focus.</p>
     </div>
 
     <div class="threeWrap">
       <div class="threeControls">
+        <label class="control">
+          <span>Mode</span>
+          <select id="modeSelect">
+            <option value="stack" selected>Stack</option>
+            <option value="interior">Interior</option>
+          </select>
+        </label>
+
         <label class="control">
           <span>View</span>
           <select id="viewSelect">
@@ -73,20 +82,35 @@
           </select>
         </label>
 
-        <label class="control" style="min-width:220px;">
+        <label class="control" style="min-width:230px;">
           <span>Explode</span>
           <input id="explodeRange" type="range" min="0" max="140" value="40" />
         </label>
 
+        <label class="control toggle">
+          <input id="wallsToggle" type="checkbox" checked />
+          <span>Walls</span>
+        </label>
+
+        <label class="control toggle">
+          <input id="ceilingToggle" type="checkbox" />
+          <span>Ceiling</span>
+        </label>
+
+        <label class="control toggle">
+          <input id="labelsToggle" type="checkbox" checked />
+          <span>Labels</span>
+        </label>
+
         <button id="resetCamBtn" class="btnSecondary">Reset Camera</button>
+        <button id="fitRoomBtn" class="btnSecondary">Fit Selected</button>
       </div>
 
       <div id="threeContainer" class="threeCanvas" aria-label="3D viewer"></div>
-      <div id="threeHint" class="threeHint">Tip: drag to rotate • scroll to zoom • right-drag to pan</div>
+      <div id="threeHint" class="threeHint">Tip: drag to rotate • scroll to zoom • right-drag/shift-drag to pan • click rooms to focus</div>
     </div>
   </section>
 
-</section>
 
   <!-- GALLERY SECTION -->
   <section class="section">
